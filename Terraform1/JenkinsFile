@@ -19,7 +19,9 @@ pipeline {
         stage('plan') {
             steps {
                 dir('Terraform1') {
-                    sh 'terraform plan'
+                    timeout(time: 5, unit: 'MINUTES') {
+                        sh 'terraform plan'
+                    }
                 }
             }
         }
@@ -27,7 +29,9 @@ pipeline {
         stage('apply') {
             steps {
                 dir('Terraform1') {
-                    sh 'terraform apply -auto-approve'
+                    timeout(time: 5, unit: 'MINUTES') {
+                        sh 'terraform apply -auto-approve'
+                    }
                 }
             }
         }
