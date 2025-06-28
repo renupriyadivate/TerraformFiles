@@ -4,25 +4,31 @@ pipeline {
     environment {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
-        AWS_DEFAULT_REGION = 'us-west-1'
+        AWS_DEFAULT_REGION = 'ap-south-1'
     }
 
     stages {
         stage('init') {
             steps {
-                sh 'terraform init'
+                dir('Terraform1') {
+                    sh 'terraform init'
+                }
             }
         }
 
         stage('plan') {
             steps {
-                sh 'terraform plan'
+                dir('Terraform1') {
+                    sh 'terraform plan'
+                }
             }
         }
 
         stage('apply') {
             steps {
-                sh 'terraform apply -auto-approve'
+                dir('Terraform1') {
+                    sh 'terraform apply -auto-approve'
+                }
             }
         }
     }
