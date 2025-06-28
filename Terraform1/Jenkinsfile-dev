@@ -7,8 +7,8 @@ pipeline {
   }
 
   environment {
-    AWS_ACCESS_KEY_ID     = credentials('your-aws-access-key')
-    AWS_SECRET_ACCESS_KEY = credentials('your-aws-secret-key')
+    AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+    AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
     AWS_DEFAULT_REGION    = 'us-west-1' // Change if needed
   }
 
