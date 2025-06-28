@@ -1,24 +1,33 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:light'
+            image 'ubuntu:20.04'
             args '-u root --entrypoint=""'
         }
     }
 
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
-        AWS_DEFAULT_REGION    = 'us-west-1'
+        AWS_DEFAULT_REGION = 'us-west-1'
     }
 
     stages {
-        stage('Install AWS CLI') {
+        stage('Install Tools') {
             steps {
                 sh '''
-                    apk add --no-cache curl unzip python3 py3-pip
+                    apt-get update
+                    apt-get install -y curl unzip gnupg software-properties-common python3-pip
+
+                    # Install AWS CLI
                     pip3 install awscli
                     aws --version
+
+                    # Install Terraform
+                    curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+                    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
+                    apt-get update && apt-get install -y terraform
+                    terraform version
                 '''
             }
         }
@@ -34,8 +43,11 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('Terraform1') {
-                    sh 'terraform plan -out=tfplan | tee tfplan_output.txt'
-                    sh 'terraform show -no-color tfplan > tfplan.txt'
+                    sh '''
+                        terraform plan -out=tfplan > tfplan_output.txt
+                        terraform show -no-color tfplan >> tfplan_output.txt
+                        cat tfplan_output.txt
+                    '''
                 }
             }
         }
