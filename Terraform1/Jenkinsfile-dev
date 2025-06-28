@@ -1,7 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:light' // 🐳 Docker image with Terraform only
+            image 'hashicorp/terraform:light'
+            args '-u root --entrypoint=""'
         }
     }
 
@@ -15,9 +16,10 @@ pipeline {
         stage('Install AWS CLI') {
             steps {
                 sh '''
-                    apt update
-                    apt install -y curl unzip awscli
-                    aws --version
+                    apk add --no-cache curl unzip
+                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                    unzip awscliv2.zip
+                    ./aws/install
                 '''
             }
         }
