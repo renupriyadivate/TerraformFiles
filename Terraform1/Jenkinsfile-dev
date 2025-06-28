@@ -1,22 +1,23 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:light'
+            image 'hashicorp/terraform:1.5.7'
             args '-u root --entrypoint=""'
         }
     }
 
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
-        AWS_DEFAULT_REGION    = 'us-west-1'
+        AWS_DEFAULT_REGION = 'us-west-1'
     }
 
     stages {
         stage('Install AWS CLI') {
             steps {
                 sh '''
-                    apk add --no-cache curl unzip
+                    apt update -y
+                    apt install -y curl unzip
                     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
                     unzip awscliv2.zip
                     ./aws/install
