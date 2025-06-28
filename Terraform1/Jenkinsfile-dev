@@ -2,36 +2,34 @@ pipeline {
   agent {
     docker {
       image 'ubuntu:24.04'
-      args '-u root:root'  // to run as root
+      args '-u root' // install as root user inside container
     }
   }
 
   environment {
-    AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
-    AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
-    AWS_DEFAULT_REGION    = 'ap-south-1'
+    AWS_ACCESS_KEY_ID = credentials('your-aws-access-key')       // set in Jenkins > Credentials
+    AWS_SECRET_ACCESS_KEY = credentials('your-aws-secret-key')   // set in Jenkins > Credentials
+    AWS_DEFAULT_REGION = 'ap-south-1'                             // change if needed
   }
 
   stages {
-    stage('Install Tools') {
+    stage('Install AWS & Terraform') {
       steps {
         sh '''
-          apt update -y
-          apt install -y unzip curl wget
+          apt update && apt install -y curl unzip gnupg software-properties-common
 
-          echo "Installing AWS CLI using zip method..."
+          # Install AWS CLI v2
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           ./aws/install
 
-          echo "AWS Version:"
-          aws --version
+          # Install Terraform
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(. /etc/os-release && echo "$VERSION_CODENAME") main" > /etc/apt/sources.list.d/hashicorp.list
+          apt update && apt install -y terraform
 
-          echo "Installing Terraform..."
-          wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
-          unzip terraform_1.8.5_linux_amd64.zip
-          mv terraform /usr/local/bin/
           terraform -version
+          aws --version
         '''
       }
     }
@@ -44,10 +42,22 @@ pipeline {
       }
     }
 
+    stage('Terraform Validate') {
+      steps {
+        dir('Terraform1') {
+          sh 'terraform validate'
+        }
+      }
+    }
+
     stage('Terraform Plan') {
       steps {
         dir('Terraform1') {
-          sh 'terraform plan -out=tfplan'
+          sh '''
+            terraform plan -out=tfplan -input=false | tee plan_output.txt
+            echo "================== PLAN ==================="
+            cat plan_output.txt
+          '''
         }
       }
     }
@@ -55,7 +65,10 @@ pipeline {
     stage('Terraform Apply') {
       steps {
         dir('Terraform1') {
-          sh 'terraform apply -auto-approve tfplan'
+          input message: 'Shall I apply these changes?'
+          sh '''
+            terraform apply -input=false tfplan
+          '''
         }
       }
     }
