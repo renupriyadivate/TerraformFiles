@@ -1,14 +1,14 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:1.5.7'
+            image 'hashicorp/terraform:light'   // ✅ Debian-based image (supports apt)
             args '-u root --entrypoint=""'
         }
     }
 
     environment {
-        AWS_ACCESS_KEY_ID = credentials('aws-access-key')
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key')       // 🔐 Your Jenkins credential ID
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')   // 🔐 Your Jenkins credential ID
         AWS_DEFAULT_REGION = 'us-west-1'
     }
 
