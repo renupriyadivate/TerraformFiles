@@ -7,9 +7,9 @@ pipeline {
     }
 
     environment {
-        AWS_ACCESS_KEY_ID = credentials('aws-access-key')
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
-        AWS_DEFAULT_REGION = 'us-west-1'
+        AWS_DEFAULT_REGION    = 'us-west-1'
     }
 
     stages {
@@ -34,12 +34,8 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('Terraform1') {
-                    timeout(time: 5, unit: 'MINUTES') {
-                        sh '''
-                            echo "==== RUNNING TERRAFORM PLAN ===="
-                            terraform plan -input=false -no-color -parallelism=2
-                        '''
-                    }
+                    sh 'terraform plan -out=tfplan | tee tfplan_output.txt'
+                    sh 'terraform show -no-color tfplan > tfplan.txt'
                 }
             }
         }
