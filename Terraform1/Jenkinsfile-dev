@@ -34,7 +34,12 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('Terraform1') {
-                    sh 'terraform plan'
+                    timeout(time: 5, unit: 'MINUTES') {
+                        sh '''
+                            echo "==== RUNNING TERRAFORM PLAN ===="
+                            terraform plan -input=false -no-color -parallelism=2
+                        '''
+                    }
                 }
             }
         }
