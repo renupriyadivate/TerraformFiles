@@ -2,17 +2,18 @@ pipeline {
   agent {
     docker {
       image 'ubuntu:24.04'
-      args '-u root' // install as root user inside container
+      args '-u root' // Run as root inside the container
     }
   }
 
   environment {
     AWS_ACCESS_KEY_ID = credentials('aws-access-key')       // set in Jenkins > Credentials
     AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')   // set in Jenkins > Credentials
-    AWS_DEFAULT_REGION = 'us-west-1'                             // change if needed
+    AWS_DEFAULT_REGION = 'us-west-1'                         // update as needed
   }
 
   stages {
+
     stage('Install AWS & Terraform') {
       steps {
         sh '''
@@ -20,7 +21,8 @@ pipeline {
 
           # Install AWS CLI v2
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
+          rm -rf aws                      # Clean previous extract if exists
+          unzip -o -q awscliv2.zip       # -o: overwrite, -q: quiet
           ./aws/install
 
           # Install Terraform
@@ -66,9 +68,7 @@ pipeline {
       steps {
         dir('Terraform1') {
           input message: 'Shall I apply these changes?'
-          sh '''
-            terraform apply -input=false tfplan
-          '''
+          sh 'terraform apply -input=false tfplan'
         }
       }
     }
