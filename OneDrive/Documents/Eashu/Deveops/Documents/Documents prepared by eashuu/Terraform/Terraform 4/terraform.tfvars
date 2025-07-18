@@ -1,0 +1,7 @@
+vpc_cidr = "10.0.0.0/16"
+vpc_name = "vpc1"
+IGW_Name = "Igw1"
+public_subnet_cidr = "10.0.1.0/24"
+availability_zone = "us-east-1a"
+internet_cidr = "0.0.0.0/0"
+ami = "ami-0866a3c8686eaeeba"
