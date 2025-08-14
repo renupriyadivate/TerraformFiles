@@ -2,7 +2,7 @@ terraform {
   backend "s3" {
     bucket         = "terraform-jenkins-pipeline-bucket-eashu"
     key            = "my-first-pipeline/terraform.tfstate"
-    region         = "us-west-1"
+    region         = "us-east-1"
     dynamodb_table = "terraform-locks-baby"
     encrypt        = true
   }
