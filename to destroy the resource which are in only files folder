@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
+        AWS_DEFAULT_REGION    = 'us-east-1'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/renupriyadivate/TerraformFiles.git'
+            }
+        }
+
+        stage('Init') {
+            steps {
+                dir('files') {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Destroy Infrastructure') {
+            steps {
+                dir('files') {
+                    sh 'terraform destroy -auto-approve'
+                }
+            }
+        }
+    }
+}
