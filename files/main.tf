@@ -1,3 +1,13 @@
+terraform {
+  backend "s3" {
+    bucket         = "terraform-jenkins-pipeline-bucket-eashu"
+    key            = "my-first-pipeline/terraform.tfstate"
+    region         = "us-west-1"
+    dynamodb_table = "terraform-locks-baby"
+    encrypt        = true
+  }
+}
+
 resource "aws_vpc" "vpc1" {
    cidr_block = var.cidr_block
    tags = {
@@ -62,7 +72,7 @@ resource "aws_key_pair" "public_key" {
 
 resource "local_file" "private_key" {
   content = tls_private_key.keyPairs.private_key_pem
-  filename = "/mnt/c/users/downloads/Renupriya/jenkins-key.pem"
+  filename = "${path.module}/jenkins-key.pem"
 }
 
 resource "aws_security_group" "sg" {
