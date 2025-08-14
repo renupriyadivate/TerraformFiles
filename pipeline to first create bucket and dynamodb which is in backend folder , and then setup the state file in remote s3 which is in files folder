@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
+        AWS_DEFAULT_REGION    = 'us-east-1'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/renupriyadivate/TerraformFiles.git'
+            }
+        }
+
+        stage('Init & Apply Backend') {
+            steps {
+                dir('Backend') {
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+
+        stage('Init Main Infrastructure') {
+            steps {
+                dir('files') {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Plan Main Infrastructure') {
+            steps {
+                dir('files') {
+                    sh 'terraform plan -out=tfplan'
+                }
+            }
+        }
+
+        stage('Apply Main Infrastructure') {
+            steps {
+                dir('files') {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+
+    }
+}
